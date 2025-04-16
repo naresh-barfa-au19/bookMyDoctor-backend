@@ -1,12 +1,22 @@
 import mongoose from "mongoose";
 
 const connectDB = async () => {
-  mongoose.connection.on('connected', () => console.log('Database Connected'))
-  await mongoose.connect(`${process.env.MONGODB_URI}/BookMyDoctor`, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    ssl: true, // Enable SSL
-  })
-}
+  try {
+    await mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      ssl: true,
+      serverSelectionTimeoutMS: 5000
+    });
+    console.log('Database Connected');
+  } catch (err) {
+    console.error('Connection Failed:', err.message);
+    process.exit(1);
+  }
+
+  mongoose.connection.on('error', err => {
+    console.error('DB Connection Lost:', err);
+  });
+};
 
 export default connectDB
